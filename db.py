@@ -1,9 +1,3 @@
-"""
-db.py
----
+from flask_sqlalchemy import SQLAlchemy
 
-Later on, this file will be replaced by SQLAlchemy. For now, it mimics a database.
-"""
-
-stores = {}
-items = {}
+db = SQLAlchemy()

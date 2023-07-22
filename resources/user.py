@@ -8,6 +8,7 @@ from flask_jwt_extended import (
     jwt_required,
 )
 from passlib.hash import bcrypt
+from blocklist import BLOCKLIST
 import datetime
 
 from db import db
@@ -49,10 +50,19 @@ class UserLogin(MethodView):
             expires = datetime.timedelta(days=1)
             access_token = create_access_token(
                 identity=user.id, fresh=True, expires_delta=expires)
-            refresh_token = create_refresh_token(user.id)
-            return {"message": "User successfully logged in.", "access_token": access_token, "refresh_token": refresh_token}, 200
 
-        abort(401, message="Invalid credentials.")
+            return {"message": "User successfully logged in.", "access_token": access_token}, 200
+
+        abort(401, message="There is a problem with the username and or password. Please verify and try again.")
+
+
+@blp.route("/logout")
+class UserLogout(MethodView):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+        return {"message": "Successfully logged out"}, 200
 
 
 @blp.route("/user/<int:user_id>")
@@ -68,3 +78,11 @@ class User(MethodView):
         db.session.delete(user)
         db.session.commit()
         return {"message": "User deleted."}, 200
+
+
+@blp.route("/user")
+class UserList(MethodView):
+    @jwt_required()
+    @blp.response(200, UserSchema(many=True))
+    def get(self):
+        return UserModel.query.all()

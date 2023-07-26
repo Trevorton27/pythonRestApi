@@ -1,4 +1,4 @@
-flask==2.3.2
+flask==2.2.5
 flask-smorest
 python-dotenv
 sqlalchemy
